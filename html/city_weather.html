@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title></title>
+    <style type="text/css">
+    *{margin: 0;padding: 0;}
+    .head{width: 100%;}
+    h3{background-color: #ccc;height: 40px;color:white;line-height:40px;padding-left: 10px;}
+    .hotcity{font-size: 16px;}
+    a{text-decoration: none;color:black;margin-right: 16px;}
+    h4{color:black;height: 50px;line-height: 60px;padding-left: 10px;}
+    ul{height: 160px;overflow:hidden;}
+    li{width: 20%;border-right:1px dotted lightgrey;float:left;list-style:none;height: 140px;}
+    li p{height: 34px;text-align: center;font-weight: bold;}
+    li span{display:block;}
+    li img{padding-left:30%;}
+    </style>
+    <script type="text/javascript">
+    document.addEventListener('DOMContentLoaded',function(){
+        var hotcity = document.querySelector('.hotcity');
+        var head = document.querySelector('.head');
+        var citys = hotcity.children;
+        var h4 = document.getElementsByTagName('h4')[0];
+        var xhr = new XMLHttpRequest();
+
+        xhr.onload = function(){
+            if(xhr.status === 200 || xhr.status === 304){
+                var res = JSON.parse(xhr.responseText);
+                console.log(res);
+            }
+        }
+
+        xhr.open('get','http://wthrcdn.etouch.cn/weather_mini?city=广州',true);
+        xhr.send();
+        h4.innerText='广州'+h4.innerText;
+        
+        hotcity.onclick = function(e){
+
+            if(e.target.className=='city'){
+                var _city = e.target.innerText;
+                // console.log(_city);
+                var xhr_weather = new XMLHttpRequest();
+                
+    
+                xhr_weather.onreadystatechange= function(){
+                    if(xhr_weather.readyState === 4 && (xhr.status === 200 || xhr.status === 304)){
+                        var res = JSON.parse(xhr.responseText);
+                        
+                        var ul = document.createElemnet('ul');
+                        
+                        // ul.innerHTML = {
+                        //     return `<li>
+                        //         <p>${item.forecast}</h4>
+                        //         <div class="content">${item.content}</div>
+                        //         <span class="like">${item.likecnt}</span>
+                        //         <span class="comment">${item.comtcnt}</span>
+                        //     </li>`
+                        // }).join('');
+
+                    }
+                }
+            xhr.open('get','http://wthrcdn.etouch.cn/weather_mini?city='+_city,true);
+            xhr.send();
+            }
+        }
+    })
+
+
+    </script>
+</head>
+<body>
+    <div class="head">
+        <h4>未来5天天气情况</h4>
+        <!-- <ul>
+            <li><p>13日星期天</p>晴<img src="img/tianqi/1.png" /><br /><span>22℃~31℃</span>南风</li>
+            <li><p>13日星期天</p>晴<img src="img/tianqi/1.png" /><br /><span>22℃~31℃</span>南风</li>
+        </ul> -->
+    </div> 
+    <h3>热门城市</h3>
+    <div class="hotcity">
+       <a href="#" class="city">北京</a>
+       <a href="#" class="city">天津</a>
+       <a href="#" class="city">沈阳</a>
+    </div>
+</body>
+</html>

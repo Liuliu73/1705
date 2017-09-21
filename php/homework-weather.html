@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>获取天气</title>
+    <style type="text/css">
+
+        ul,li{list-style:none;}
+        ul{overflow:hidden;}
+
+        .hot{overflow:hidden;}
+        .hot li{float:left;width:100px;height:30px;text-align:center;}
+        .zimu{overflow:hidden;}
+        .zimu li{float:left;width:100px;height:30px;text-align:center;}
+        p span {padding:10px;}
+        .show li{float:left;width:200px;}
+        .show li>span{display:block;}
+        body>h2{background-color:#ddd;height:50px;line-height:50px;padding-left:5px;}
+        .city{position:relative;}
+        .active{background-color:pink;}
+    </style>
+    <script>
+    document.addEventListener('DOMContentLoaded',function(){
+        /*
+            接口：http://wthrcdn.etouch.cn/weather_mini?city=北京
+         */
+         // 获取元素
+        var city = document.querySelector('.city');
+        var hot = document.querySelector('.hot');
+        var city = document.querySelector('.city');
+        var show = document.querySelector('.show');
+        var zimu = document.querySelector('.zimu');
+
+        var obj = {
+            '晴':'1.png',
+            '多云':'3.png',
+            '阴':'5.png',
+            '阵雨':'8.png',
+            '暴雨':'13.png',
+            '雷阵雨':'16.png',
+            '大雨':'12.png',
+            '小雨':'10.png'
+        }
+        var str ='abcdefghijklmnopqrstuvwxyz';
+    
+        var xhr = new XMLHttpRequest();
+
+        xhr.onload = function(){
+            if(xhr.status === 200 || xhr.status === 304){
+                var res = JSON.parse(xhr.responseText);
+
+                 //热门城市
+                res.regions.forEach(function(obj){
+
+                    if(obj.hot == true){
+                        let li = document.createElement('li');
+                        li.innerHTML=obj.name;
+                        hot.appendChild(li);
+                    }
+                    if(obj.regions){
+                        var hc= obj.regions;
+                        
+                        hc.forEach(function(item){
+                            if (item.hot == true){
+                                let li = document.createElement('li');
+                                li.innerHTML=item.name;
+                                hot.appendChild(li);
+                            }  
+
+                        })
+
+                    }
+
+                 });
+
+                //所有城市
+                for(let i=0;i<str.length;i++){
+                    let p = document.createElement('p');
+                    p.innerHTML='<h2>'+str[i]+'</h2>';
+                    p.className = str[i];
+                    city.appendChild(p);
+
+
+                    //字母导航
+                    let li = document.createElement('li');
+                    li.innerHTML=str[i].toUpperCase();
+                    zimu.appendChild(li);
+                   
+                   //一级城市
+                   res.regions.forEach(obj=>{
+                        var first = obj.pinyin.charAt(0);
+                        
+                        if(first.toLowerCase() === str[i]){
+                            let span = document.createElement('span');
+                            span.innerHTML = obj.name;
+                            p.appendChild(span);
+                        }
+
+                        //二级城市
+                        if(obj.regions){
+                            var temp = obj.regions;
+
+                            for(var obj1 of temp){
+
+                                if(obj1.pinyin){
+                                    var first1 = obj1.pinyin.charAt(0);
+
+                                    if(first1.toLowerCase() === str[i]){
+                                        let span = document.createElement('span');
+                                        span.innerHTML = obj1.name;
+                                        p.appendChild(span);
+                                    }
+                                }
+                               
+                            }
+                        }
+
+
+                   })
+
+
+                }
+            
+
+            }
+        }
+        xhr.open('get','../php/api/data/region.json',true);
+        xhr.send();
+
+       
+        hot.onclick = function(e){
+
+            if(e.target.tagName.toLowerCase() === 'li'){
+                    var current = e.target.innerHTML;
+                    ajax({
+                        type:'get',
+                        url:'http://wthrcdn.etouch.cn/weather_mini',
+                        data:{city:current},
+                        success:function(data){
+                            create(data);
+                        }
+                    })
+                
+                }
+            }
+        city.onclick = function(e){
+             
+            if(e.target.tagName.toLowerCase() === 'span'){
+                window.scrollTo(0,0)   
+                var current = e.target.innerHTML;
+                console.log(current)
+
+                    ajax({
+                        type:'get',
+                        url:'http://wthrcdn.etouch.cn/weather_mini?',
+                        data:{city:current},
+                        success:function(data){
+                            create(data);
+                            
+                        }
+                    })
+            }
+        }
+        zimu.onclick = function(e){
+            if(e.target.tagName.toLowerCase() === 'li'){
+                var current = e.target.innerHTML.toLowerCase();
+                var ps = city.children;
+                for(let i=0;i<ps.length;i++){
+                    ps[i].classList.remove('active');
+                    if(current == ps[i].className){
+                        console.log(ps[i ])
+                        var height=ps[i].offsetTop;
+                        var currentheight = document.body.scrollTop;
+                        
+                            window.scrollBy(0,height);
+
+                        
+
+                        ps[i].classList.add('active')
+                    }
+                }
+            }
+        }
+
+        function create(data){
+            if(data.data.forecast){
+
+            var days = data.data.forecast;
+            var ul = document.createElement('ul');
+            ul.innerHTML=days.map(item=>{
+
+                item.low = item.low.slice(3);
+                item.high = item.high.slice(3);
+                for(var attr in obj){
+                    if(item.type === attr){
+
+                        var url = obj[attr];                    
+                    }
+                }
+                
+                return `<li>
+                <h4>${item.date}</h4>
+                <p>${item.type}</p>
+                <img src="img/tianqi/${url}">
+                <span>${item.low}~${item.high}</span>
+                <span>${item.fengxiang}</span>
+                
+                </li>`
+            }).join('');
+            var head = document.createElement('h2');
+            head.innerHTML=`${data.data.city}未来5天天气预报`;
+
+            show.innerHTML='';
+            show.appendChild(head);
+            show.appendChild(ul);
+            }
+        }
+        
+    })
+
+
+    </script>
+    <script src="common.js"></script>
+ </head>
+<body>
+    <div class="show"></div>
+    <h2>热门城市</h2>
+    <ul class="hot"></ul>
+    <h2>按拼音字母查询</h2>
+    <ul class='zimu'>
+        
+    </ul>
+    <ul class="city">
+        
+    </ul>
+</body>
+</html>

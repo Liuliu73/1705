@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<script src="common.js"></script>
+	<style>
+		html{overflow:hidden;}
+		ul {
+	        margin: 0;
+	        padding: 0;
+	        list-style: none;
+	    }
+	    .Box{position:absolute;width:300px;height:200px;border:1px solid #ccc;background-color:#fff;}
+	    .Box .title{height:50px;line-height:50px;padding:0 10px;background:linear-gradient(#fff, #efefef 5%, #ddd);}
+	    .Box .content{padding:15px;}
+	    .Box .footer{position:absolute;left:0;bottom:0;right:0;padding:20px;text-align:center;}
+	    .footer button{display:inline-block;margin:0 5px;padding:5px 15px;border:1px solid #ddd;background:linear-gradient(#efefef, #cfcfcf);}
+	    .Box .btnClose{position:absolute;top:0;right:0;line-height:50px;width:30px;text-align: center;}
+	    .Box .btnClose:hover{background-color: #f00;color:#fff;}
+	    .overlay{position:fixed;left:0;top:0;right:0;bottom:0;background-color:#000;opacity:0.3;}
+	</style>
+	<script src="common.js"></script>
+	<script>
+		document.addEventListener('DOMContentLoaded',function(){
+			//创建一个类
+		class Box{
+				constructor(width,content,title){
+					// 属性
+					this.width = width;
+					this.content = content;
+					this.title = title;
+				}
+		
+		
+			init(){
+				var box=document.createElement('div')
+				box.className='Box';
+
+				var title=document.createElement('div')
+				title.className='title';
+				title.innerHTML=this.title;
+				box.appendChild(title);
+
+				var content =document.createElement('div');
+				content.className='content';
+				content.innerHTML=this.content;
+				box.appendChild(content);
+
+				var btnClose=document.createElement('span');
+				btnClose.innerHTML='&times;';
+				btnClose.className='btnClose';
+				box.appendChild(btnClose);
+				
+				document.body.appendChild(box);
+				box.style.width=this.width+'px';
+				
+				
+				this.ele=box;
+
+				//绑定点击事件
+				btnClose.onclick=function(){
+					this.hide();
+				}.bind(this);
+				title.onmousedown=function(){
+					this.show();
+					
+					document.onmousemove=function(e){
+						this.getPosition();
+						
+					}.bind(this);
+				}.bind(this);
+				title.onmouseup=function(){
+					this.clearMove();
+				}.bind(this);
+			},
+			show:function(e){
+				e=e||window.event;
+				this.left=e.offsetX;
+				this.top=e.offsetY;
+				e.stopPropagation();
+			},
+
+			hide:function(){
+				this.ele.style.display='none';
+			},
+
+			//设定位置
+			getPosition:function(e){
+				e=e||window.event;
+				// var left=e.offsetX;
+				// var top=e.offsetY;
+				this.ele.style.top=e.clientY-this.top+'px';
+				this.ele.style.left=e.clientX-this.left+'px';
+				e.preventDefault();
+			},
+			clearMove:function(){
+				document.onmousemove=null;
+			}
+
+		};
+		var p1=new Box(500,'关闭这个广告，请点击右上角','弹窗').init();
+		
+
+		//创建一个新的对象
+		function Adpop(opt){
+			//使用call来继承Box的属性
+			Box.call(this,opt)
+		}
+		//通过原型链来继承Box的方法
+		// Adpop.prototype=new Box({});
+
+	//或者是es5的Object.create()的方式来继承方法
+	//原型式继承
+	Adpop.prototype=Object.create(Box.prototype);
+	
+	Adpop.prototype.init=function(){
+		var box=document.createElement('div')
+				box.className='Box';
+
+				var title=document.createElement('div')
+				title.className='title';
+				title.innerHTML=this.title;
+
+				var btnClose=document.createElement('span');
+				btnClose.innerHTML='&times;';
+				btnClose.className='btnClose';
+
+				//设置样式
+				box.style.width=this.width+'px';
+				box.style.right=0;
+				box.style.bottom=0;
+				box.appendChild(title);
+				
+				box.appendChild(btnClose);
+
+				document.body.appendChild(box);
+
+				this.ele=box;
+
+				btnClose.onclick=function(){
+					this.hide();
+				}.bind(this);
+				setTimeout(function(){
+					this.hide();
+				}.bind(this),5000);
+				
+	}
+	// Adpop.prototype.auto=function(){
+	// 	setTimeout(animate(this.ele,{height:0}),5000)
+	// };
+	Adpop.prototype.hide=function(){
+		animate(this.ele,{height:0})
+	}
+	var ad=new Adpop({
+		width:200,
+		title:'广告',
+		content:'这是一个广告'
+		
+	});
+	ad.init();
+})
+	
+
+
+	</script>
+</head>
+<body>
+
+	
+</body>
+</html>
